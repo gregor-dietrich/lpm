@@ -48,4 +48,10 @@
     <Class name="de.vptr.lpm.view.user.UserFormDialog" />
     <Bug pattern="EI_EXPOSE_REP2" />
   </Match>
+
+  <!-- Suppress DLS_DEAD_LOCAL_STORE for ProjectSettingsView - title is added in the method -->
+  <Match>
+    <Class name="de.vptr.lpm.view.project.ProjectSettingsView" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
 </FindBugsFilter>
