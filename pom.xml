@@ -71,6 +71,20 @@
             <version>${vaadin.version}</version>
         </dependency>
 
+        <!-- Line Awesome for icons -->
+        <dependency>
+            <groupId>org.parttio</groupId>
+            <artifactId>line-awesome</artifactId>
+            <version>${line-awesome.version}</version>
+        </dependency>
+
+        <!-- SpotBugs annotations for suppressing specific warnings -->
+        <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-annotations</artifactId>
+            <version>${spotbugs-annotations.version}</version>
+        </dependency>
+
         <!-- Quarkus Core dependencies -->
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -113,29 +127,10 @@
             <artifactId>quarkus-security</artifactId>
         </dependency>
 
-        <!-- Security with JPA identity store -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-security-jpa</artifactId>
-        </dependency>
-
-        <!-- Elytron Security for password hashing -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-elytron-security-common</artifactId>
-        </dependency>
-
         <!-- JSON formatter for logging -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-logging-json</artifactId>
-        </dependency>
-
-        <!-- Line Awesome for icons -->
-        <dependency>
-            <groupId>org.parttio</groupId>
-            <artifactId>line-awesome</artifactId>
-            <version>${line-awesome.version}</version>
         </dependency>
 
         <!-- Quarkus Test Framework for unit and integration tests -->
@@ -157,13 +152,6 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-panache-mock</artifactId>
             <scope>test</scope>
-        </dependency>
-
-        <!-- SpotBugs annotations for suppressing specific warnings -->
-        <dependency>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs-annotations</artifactId>
-            <version>${spotbugs-annotations.version}</version>
         </dependency>
 
         <!-- MicroProfile Fault Tolerance for retry, timeout, fallback patterns -->
