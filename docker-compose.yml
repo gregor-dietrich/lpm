@@ -1,0 +1,70 @@
+services:
+  lpm:
+    image: gregordietrich/lpm:1.0.0-SNAPSHOT
+    build:
+      context: .
+      dockerfile: src/main/docker/Dockerfile.ubi
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      quarkus.datasource.jdbc.url: jdbc:postgresql://postgres:5432/${SQL_DATABASE:-lpm}
+      quarkus.datasource.username: ${SQL_USERNAME:-lpm}
+      quarkus.datasource.password: ${SQL_PASSWORD:-changeit}
+    ports:
+      - "80:8080"
+    volumes:
+      - lpm_logs:/deployments/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://lpm:8080/q/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:18.1-alpine3.23
+    restart: unless-stopped
+    command: ["postgres", "-c", "max_connections=200"]
+    environment:
+      POSTGRES_USER: ${SQL_USERNAME:-lpm}
+      POSTGRES_PASSWORD: ${SQL_PASSWORD:-changeit}
+      POSTGRES_DB: ${SQL_DATABASE:-lpm}
+      POSTGRES_PORT: 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/main/resources/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${SQL_USERNAME:-lpm} -d ${SQL_DATABASE:-lpm}"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  pgadmin:
+    image: dpage/pgadmin4:9.10.0
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-changeit}
+    ports:
+      - "42069:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider -q http://pgadmin/ || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  lpm_logs:
+  pgadmin_data:
+  postgres_data:

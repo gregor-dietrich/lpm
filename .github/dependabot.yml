@@ -1,0 +1,24 @@
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+
+multi-ecosystem-groups:
+  infrastructure:
+    schedule:
+      interval: "weekly"
+
+updates:
+  - package-ecosystem: "docker"
+    directory: "/src/main/docker"
+    patterns: ["eclipse-temurin:21.*.*"]
+    multi-ecosystem-group: "infrastructure"
+
+  - package-ecosystem: "maven"
+    directory: "/"
+    patterns: ["*"]
+    multi-ecosystem-group: "infrastructure"
+    ignore:
+      - dependency-name: "io.quarkus:*"
+        versions: [">=3.28.0"]
+      - dependency-name: "io.quarkus.platform:*"
+        versions: [">=3.28.0"]
