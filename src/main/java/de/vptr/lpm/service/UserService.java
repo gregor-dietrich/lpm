@@ -119,7 +119,27 @@ public class UserService {
     }
 
     /**
-     * Updates a user's profile information.
+     * Updates a user's basic information (name, email, status).
+     *
+     * @param id          the user ID
+     * @param username    the username (not updated, used for reference)
+     * @param email       the new email
+     * @param displayName the new display name
+     * @return the updated UserDTO
+     */
+    public UserDto updateUser(final Long id, final String username, final String email, final String displayName) {
+        return this.userRepository.findByIdOptional(id)
+                .map(user -> {
+                    user.email = email;
+                    user.displayName = displayName;
+                    this.userRepository.persist(user);
+                    return UserDto.fromEntity(user);
+                })
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + id));
+    }
+
+    /**
+     * Updates a user's profile information via DTO.
      *
      * @param id  the user ID
      * @param dto the updated UserDTO (password hash is ignored)

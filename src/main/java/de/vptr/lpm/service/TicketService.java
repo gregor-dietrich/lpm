@@ -207,4 +207,15 @@ public class TicketService {
     public long countByProject(final Long projectId) {
         return this.repository.count("project.id = ?1", projectId);
     }
+
+    /**
+     * List all tickets.
+     *
+     * @return list of all tickets as DTOs
+     */
+    public List<TicketDto> listAll() {
+        return Ticket.<Ticket>listAll().stream()
+                .map(TicketDto::fromEntity)
+                .collect(Collectors.toList());
+    }
 }
