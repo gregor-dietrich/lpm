@@ -6,19 +6,23 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+import de.vptr.lpm.dto.ProjectDto;
 import de.vptr.lpm.dto.TicketDto;
 import de.vptr.lpm.dto.UserDto;
 import de.vptr.lpm.entity.TicketStatus;
+import de.vptr.lpm.service.ProjectService;
 import de.vptr.lpm.service.TicketService;
 import de.vptr.lpm.view.MainLayout;
 import jakarta.annotation.security.PermitAll;
@@ -34,6 +38,9 @@ public class TicketBoardView extends VerticalLayout implements BeforeEnterObserv
 
     @Inject
     TicketService ticketService;
+
+    @Inject
+    ProjectService projectService;
 
     private UserDto currentUser;
 
@@ -137,10 +144,32 @@ public class TicketBoardView extends VerticalLayout implements BeforeEnterObserv
         dialog.setModal(true);
         dialog.setDraggable(true);
 
-        final var content = new VerticalLayout();
-        content.add(new Span("Create new ticket dialog"));
+        final var form = new FormLayout();
 
-        dialog.add(content);
+        final var projectSelect = new Select<ProjectDto>();
+        projectSelect.setLabel("Project");
+        projectSelect.setItems(this.projectService.listAll());
+        projectSelect.setItemLabelGenerator(ProjectDto::name);
+        projectSelect.setWidthFull();
+
+        final var saveButton = new Button("Create");
+        final var cancelButton = new Button("Cancel", e -> dialog.close());
+
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        saveButton.addClickListener(e -> {
+            if (projectSelect.getValue() == null) {
+                projectSelect.setInvalid(true);
+                return;
+            }
+            new TicketFormDialog(null, projectSelect.getValue().id(), this.currentUser.id(), () -> {
+                this.initializeContent();
+                dialog.close();
+            }).open();
+        });
+
+        form.add(projectSelect);
+        dialog.add(form);
+        dialog.getFooter().add(saveButton, cancelButton);
         dialog.open();
     }
 }

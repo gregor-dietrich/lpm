@@ -113,7 +113,7 @@ public class TicketListView extends VerticalLayout implements BeforeEnterObserve
             titleField.setValue(editingTicket.title());
         }
 
-        final var descriptionField = new TextField("Description");
+        final var descriptionField = new com.vaadin.flow.component.textfield.TextArea("Description");
         descriptionField.setWidthFull();
         if (editingTicket != null) {
             descriptionField.setValue(editingTicket.description() != null ? editingTicket.description() : "");
@@ -127,6 +127,10 @@ public class TicketListView extends VerticalLayout implements BeforeEnterObserve
             if (titleField.getValue().isBlank()) {
                 titleField.setInvalid(true);
                 return;
+            }
+            if (editingTicket != null) {
+                this.ticketService.updateTicket(editingTicket.id(), titleField.getValue(), descriptionField.getValue());
+                this.dataProvider.refreshAll();
             }
             dialog.close();
         });
