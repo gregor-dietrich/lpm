@@ -3,24 +3,23 @@ package de.vptr.lpm.view;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinSession;
 
-import de.vptr.lpm.dto.UserDto;
-import jakarta.annotation.security.PermitAll;
+import de.vptr.lpm.service.AuthenticationService;
+import jakarta.inject.Inject;
 
 /**
  * Root view that redirects to login or dashboard based on authentication
  * status.
  */
-@Route(value = "")
-@PageTitle("LPM")
-@PermitAll
+@Route(value = "", layout = MainLayout.class)
 public class RootView extends VerticalLayout implements BeforeEnterObserver {
 
+    @Inject
+    transient AuthenticationService authenticationService;
+
     /**
-     * Initializes the root view and redirects accordingly.
+     * Initialize the root view.
      */
     public RootView() {
         this.setSizeFull();
@@ -28,8 +27,8 @@ public class RootView extends VerticalLayout implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(final BeforeEnterEvent event) {
-        final var currentUser = (UserDto) VaadinSession.getCurrent().getAttribute("user");
-        if (currentUser != null) {
+        final var currentUser = this.authenticationService.getCurrentUser();
+        if (currentUser.isPresent()) {
             event.rerouteTo("dashboard");
         } else {
             event.rerouteTo("login");

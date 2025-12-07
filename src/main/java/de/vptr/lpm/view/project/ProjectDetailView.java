@@ -17,7 +17,6 @@ import com.vaadin.flow.router.Route;
 import de.vptr.lpm.dto.ProjectDto;
 import de.vptr.lpm.service.ProjectService;
 import de.vptr.lpm.view.MainLayout;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 
 /**
@@ -26,7 +25,6 @@ import jakarta.inject.Inject;
  */
 @Route(value = "projects/:projectId", layout = MainLayout.class)
 @PageTitle("Project | LPM")
-@RolesAllowed({ "ADMIN", "PROJECT_MANAGER", "DEVELOPER" })
 public class ProjectDetailView extends VerticalLayout implements BeforeEnterObserver {
 
     @Inject
@@ -113,25 +111,19 @@ public class ProjectDetailView extends VerticalLayout implements BeforeEnterObse
     }
 
     private void showMembers() {
-        final var addMemberButton = new Button("Add Member", event -> {
-            Notification.show("Add member dialog not yet implemented", 3000, Notification.Position.TOP_CENTER);
-        });
-        addMemberButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        final var addMemberBtn = new Button("Add Member");
+        addMemberBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        this.contentArea.add(addMemberButton);
+        this.contentArea.add(addMemberBtn);
     }
 
     private void showSettings() {
-        final var editButton = new Button("Edit Project", event -> {
-            Notification.show("Edit project dialog not yet implemented", 3000, Notification.Position.TOP_CENTER);
-        });
-        editButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        final var editBtn = new Button("Edit");
+        editBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        final var deleteButton = new Button("Delete Project", event -> {
-            Notification.show("Delete confirmation not yet implemented", 3000, Notification.Position.TOP_CENTER);
-        });
-        deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+        final var deleteBtn = new Button("Delete");
+        deleteBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
-        this.contentArea.add(editButton, deleteButton);
+        this.contentArea.add(editBtn, deleteBtn);
     }
 }

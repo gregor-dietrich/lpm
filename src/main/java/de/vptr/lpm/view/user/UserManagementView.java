@@ -5,6 +5,8 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
@@ -19,12 +21,13 @@ import jakarta.inject.Inject;
  */
 @Route(value = "admin/users", layout = MainLayout.class)
 @PageTitle("User Management | LPM")
-public class UserManagementView extends VerticalLayout {
+public class UserManagementView extends VerticalLayout implements BeforeEnterObserver {
 
     @Inject
     transient UserService userService;
 
     private Grid<UserDto> userGrid;
+    private boolean initialized = false;
 
     /**
      * Initializes the user management view with grid and controls.
@@ -32,14 +35,26 @@ public class UserManagementView extends VerticalLayout {
     public UserManagementView() {
         this.setPadding(true);
         this.setSpacing(true);
+    }
+
+    @Override
+    public void beforeEnter(final BeforeEnterEvent event) {
+        if (this.initialized) {
+            return;
+        }
 
         final var currentUser = (UserDto) VaadinSession.getCurrent().getAttribute("user");
         if (currentUser == null || currentUser.roles().stream()
                 .noneMatch(r -> "ADMIN".equals(r.name()))) {
-            this.add(new H2("Access Denied"));
-            this.getUI().ifPresent(ui -> ui.navigate("dashboard"));
+            event.forwardTo("dashboard");
             return;
         }
+
+        this.initializeContent();
+        this.initialized = true;
+    }
+
+    private void initializeContent() {
 
         final var title = new H2("User Management");
         final var createButton = new Button("Create User", event -> this.openUserDialog(null));

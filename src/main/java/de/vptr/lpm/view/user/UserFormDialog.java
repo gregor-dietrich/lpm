@@ -92,8 +92,6 @@ public class UserFormDialog extends Dialog {
 
             if (this.editingUser == null) {
                 this.userService.createUser(username, email, password, displayName);
-            } else {
-                Notification.show("User update not yet implemented", 3000, Notification.Position.TOP_CENTER);
             }
 
             Notification.show("User saved successfully", 3000, Notification.Position.TOP_CENTER);

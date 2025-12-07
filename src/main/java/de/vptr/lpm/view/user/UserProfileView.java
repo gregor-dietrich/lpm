@@ -14,7 +14,6 @@ import com.vaadin.flow.server.VaadinSession;
 import de.vptr.lpm.dto.UserDto;
 import de.vptr.lpm.service.UserService;
 import de.vptr.lpm.view.MainLayout;
-import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
 
 /**
@@ -22,7 +21,6 @@ import jakarta.inject.Inject;
  */
 @Route(value = "profile", layout = MainLayout.class)
 @PageTitle("Profile | LPM")
-@PermitAll
 public class UserProfileView extends VerticalLayout {
 
     @Inject

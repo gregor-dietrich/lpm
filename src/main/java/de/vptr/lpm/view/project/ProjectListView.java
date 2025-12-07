@@ -9,8 +9,11 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 
 import de.vptr.lpm.dto.ProjectDto;
 import de.vptr.lpm.service.ProjectService;
@@ -22,13 +25,14 @@ import jakarta.inject.Inject;
  */
 @Route(value = "projects", layout = MainLayout.class)
 @PageTitle("Projects | LPM")
-public class ProjectListView extends VerticalLayout {
+public class ProjectListView extends VerticalLayout implements BeforeEnterObserver {
 
     @Inject
     transient ProjectService projectService;
 
-    private final Grid<ProjectDto> grid;
-    private final ListDataProvider<ProjectDto> dataProvider;
+    private Grid<ProjectDto> grid;
+    private ListDataProvider<ProjectDto> dataProvider;
+    private boolean initialized = false;
 
     /**
      * Initializes the project list view with grid and filters.
@@ -36,17 +40,34 @@ public class ProjectListView extends VerticalLayout {
     public ProjectListView() {
         this.setPadding(true);
         this.setSpacing(true);
+    }
 
-        // Header with title and create button
+    @Override
+    public void beforeEnter(final BeforeEnterEvent event) {
+        if (this.initialized) {
+            return;
+        }
+
+        final var currentUser = (de.vptr.lpm.dto.UserDto) VaadinSession.getCurrent().getAttribute("user");
+        if (currentUser == null) {
+            event.forwardTo("login");
+            return;
+        }
+
+        this.initializeContent();
+        this.initialized = true;
+    }
+
+    private void initializeContent() {
+
+        // Header with title
         final var header = new HorizontalLayout();
         header.setDefaultVerticalComponentAlignment(Alignment.CENTER);
         header.setWidthFull();
 
         final var title = new com.vaadin.flow.component.html.H2("Projects");
-        final var createButton = new Button("Create Project", event -> this.openProjectDialog());
-        createButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        header.add(title, createButton);
+        header.add(title);
         header.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         // Search field
@@ -79,9 +100,5 @@ public class ProjectListView extends VerticalLayout {
 
     private void updateGrid() {
         this.dataProvider.refreshAll();
-    }
-
-    private void openProjectDialog() {
-        Notification.show("Project creation not yet implemented", 3000, Notification.Position.TOP_CENTER);
     }
 }

@@ -7,14 +7,12 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 
 import de.vptr.lpm.dto.UserDto;
-import jakarta.annotation.security.PermitAll;
 
 /**
  * Dashboard view serving as the landing page after login.
  */
 @Route(value = "dashboard", layout = MainLayout.class)
 @PageTitle("Dashboard | LPM")
-@PermitAll
 public class DashboardView extends VerticalLayout {
 
     /**
