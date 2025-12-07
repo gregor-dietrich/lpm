@@ -1,0 +1,29 @@
+package de.vptr.lpm.component.button;
+
+import org.vaadin.lineawesome.LineAwesomeIcon;
+
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.button.Button;
+
+/**
+ * Button that opens the user settings view. Displays a settings cog icon
+ * and optionally shows a tooltip. Click handling is delegated to the
+ * provided listener.
+ */
+public class SettingsViewButton extends Button {
+    private static final String DEFAULT_TOOLTIP = "User Settings";
+
+    /**
+     * Constructs a SettingsViewButton with the specified action and tooltip.
+     */
+    public SettingsViewButton(final ComponentEventListener<ClickEvent<Button>> viewAction, final String tooltipText) {
+        super("", viewAction);
+        this.setIcon(LineAwesomeIcon.COG_SOLID.create());
+        this.setTooltipText(tooltipText != null ? tooltipText : DEFAULT_TOOLTIP);
+    }
+
+    public SettingsViewButton(final ComponentEventListener<ClickEvent<Button>> viewAction) {
+        this(viewAction, null);
+    }
+}
