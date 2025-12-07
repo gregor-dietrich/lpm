@@ -85,13 +85,19 @@ public class UserFormDialog extends Dialog {
             final String password,
             final String displayName) {
         try {
-            if (username.isEmpty() || email.isEmpty() || password.isEmpty() || displayName.isEmpty()) {
-                Notification.show("All fields are required", 3000, Notification.Position.TOP_CENTER);
+            if (username.isEmpty() || email.isEmpty() || displayName.isEmpty()) {
+                Notification.show("All fields except password are required", 3000, Notification.Position.TOP_CENTER);
                 return;
             }
 
             if (this.editingUser == null) {
+                if (password.isEmpty()) {
+                    Notification.show("Password is required for new users", 3000, Notification.Position.TOP_CENTER);
+                    return;
+                }
                 this.userService.createUser(username, email, password, displayName);
+            } else {
+                this.userService.updateUser(this.editingUser.id(), username, email, displayName);
             }
 
             Notification.show("User saved successfully", 3000, Notification.Position.TOP_CENTER);

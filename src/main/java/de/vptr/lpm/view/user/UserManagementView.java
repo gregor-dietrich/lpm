@@ -61,9 +61,19 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
 
         this.userGrid = new Grid<>(UserDto.class);
         this.userGrid.setColumns("id", "username", "email", "displayName", "status");
-        this.userGrid.addColumn(user -> "Edit")
+        this.userGrid.addColumn(user -> "Edit / Delete")
                 .setHeader("Actions")
-                .setWidth("100px");
+                .setWidth("150px")
+                .setRenderer(new com.vaadin.flow.data.renderer.ComponentRenderer<>(user -> {
+                    final var editBtn = new Button("Edit", event -> this.openUserDialog(user));
+                    editBtn.addThemeVariants(com.vaadin.flow.component.button.ButtonVariant.LUMO_SMALL);
+                    final var deleteBtn = new Button("Delete", event -> this.deleteUser(user));
+                    deleteBtn.addThemeVariants(com.vaadin.flow.component.button.ButtonVariant.LUMO_SMALL,
+                            com.vaadin.flow.component.button.ButtonVariant.LUMO_ERROR);
+                    final var layout = new com.vaadin.flow.component.orderedlayout.HorizontalLayout(editBtn, deleteBtn);
+                    layout.setSpacing(true);
+                    return layout;
+                }));
 
         this.refreshUserList();
 
@@ -81,5 +91,29 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
             dialog.editUser(user);
         }
         dialog.open();
+    }
+
+    private void deleteUser(final UserDto user) {
+        final var confirmDialog = new com.vaadin.flow.component.dialog.Dialog();
+        confirmDialog.setHeaderTitle("Confirm Delete");
+        confirmDialog.add(new com.vaadin.flow.component.html.Paragraph(
+                "Delete user \"" + user.username() + "\"? This cannot be undone."));
+
+        final var deleteBtn = new Button("Delete", event -> {
+            try {
+                this.userService.deleteUser(user.id());
+                this.refreshUserList();
+                confirmDialog.close();
+                com.vaadin.flow.component.notification.Notification.show("User deleted successfully");
+            } catch (final Exception e) {
+                com.vaadin.flow.component.notification.Notification.show("Error deleting user: " + e.getMessage());
+            }
+        });
+        deleteBtn.addThemeVariants(com.vaadin.flow.component.button.ButtonVariant.LUMO_ERROR);
+
+        final var cancelBtn = new Button("Cancel", event -> confirmDialog.close());
+
+        confirmDialog.getFooter().add(cancelBtn, deleteBtn);
+        confirmDialog.open();
     }
 }

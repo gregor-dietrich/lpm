@@ -1,5 +1,7 @@
 package de.vptr.lpm.view.project;
 
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -57,21 +59,28 @@ public class ProjectListView extends VerticalLayout implements BeforeEnterObserv
 
     private void initializeContent() {
 
-        // Header with title
+        // Header with title and create button
         final var header = new HorizontalLayout();
         header.setDefaultVerticalComponentAlignment(Alignment.CENTER);
         header.setWidthFull();
 
         final var title = new com.vaadin.flow.component.html.H2("Projects");
+        final var createButton = new Button("Create Project", event -> this.openProjectDialog());
+        createButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        header.add(title);
+        header.add(title, createButton);
         header.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         // Search field
         final var searchField = new TextField("Search projects...");
         searchField.setPlaceholder("Search by name or key");
         searchField.setWidthFull();
-        searchField.addValueChangeListener(event -> this.updateGrid());
+        searchField.addValueChangeListener(event -> {
+            final var filter = event.getValue().toLowerCase();
+            this.dataProvider.setFilter(
+                    project -> (project.name() == null ? "" : project.name().toLowerCase()).contains(filter) ||
+                            (project.projectKey() == null ? "" : project.projectKey().toLowerCase()).contains(filter));
+        });
 
         // Grid
         this.grid = new Grid<>(ProjectDto.class, false);
@@ -95,7 +104,42 @@ public class ProjectListView extends VerticalLayout implements BeforeEnterObserv
         this.add(header, searchField, this.grid);
     }
 
-    private void updateGrid() {
-        this.dataProvider.refreshAll();
+    private void openProjectDialog() {
+        final var dialog = new com.vaadin.flow.component.dialog.Dialog();
+        dialog.setHeaderTitle("Create New Project");
+
+        final var form = new com.vaadin.flow.component.formlayout.FormLayout();
+        final var nameField = new TextField("Project Name");
+        nameField.setRequired(true);
+        final var keyField = new TextField("Project Key");
+        keyField.setRequired(true);
+        final var descField = new TextField("Description");
+
+        form.add(nameField, keyField, descField);
+
+        final var saveButton = new Button("Create", event -> {
+            if (nameField.getValue().isEmpty() || keyField.getValue().isEmpty()) {
+                com.vaadin.flow.component.notification.Notification.show("Name and Key are required");
+                return;
+            }
+            try {
+                final var currentUser = (de.vptr.lpm.dto.UserDto) VaadinSession.getCurrent().getAttribute("user");
+                this.projectService.createProject(
+                        nameField.getValue(),
+                        keyField.getValue(),
+                        descField.getValue(),
+                        currentUser.id());
+                this.dataProvider.refreshAll();
+                dialog.close();
+                com.vaadin.flow.component.notification.Notification.show("Project created successfully");
+            } catch (final Exception e) {
+                com.vaadin.flow.component.notification.Notification.show("Error creating project: " + e.getMessage());
+            }
+        });
+        final var cancelButton = new Button("Cancel", event -> dialog.close());
+
+        dialog.getFooter().add(cancelButton, saveButton);
+        dialog.add(form);
+        dialog.open();
     }
 }
