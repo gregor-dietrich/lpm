@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.applayout.AppLayout;
-import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.H1;
@@ -34,6 +33,9 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
     transient ThemeService themeService;
 
     private boolean initialized = false;
+    private boolean drawerInitialized = false;
+    private com.vaadin.flow.component.applayout.DrawerToggle drawerToggle;
+    private Button logoutButton;
 
     /**
      * Initializes the main layout with drawer and header.
@@ -45,8 +47,8 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
     @Override
     public void beforeEnter(final BeforeEnterEvent event) {
         if (!this.initialized) {
-            this.addDrawerContent();
             this.addHeaderContent();
+            this.themeService.applyTheme(this.themeService.getCurrentTheme());
             this.initialized = true;
         }
 
@@ -55,15 +57,31 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
         LOG.trace("MainLayout.beforeEnter - Target: {}", targetView.getSimpleName());
 
-        // Hide drawer on LoginView and RootView
+        // Allow LoginView and RootView without authentication
         if (targetView == LoginView.class || targetView == RootView.class) {
-            LOG.trace("Navigating to login/root view, hiding drawer");
-            this.setDrawerOpened(false);
+            LOG.trace("Navigating to login/root view, hiding drawer and logout");
+            if (this.drawerToggle != null) {
+                this.drawerToggle.setVisible(false);
+            }
+            if (this.logoutButton != null) {
+                this.logoutButton.setVisible(false);
+            }
             return;
         }
 
-        // Show drawer for authenticated views
-        this.setDrawerOpened(true);
+        // Show drawer toggle and logout for authenticated views
+        if (this.drawerToggle != null) {
+            this.drawerToggle.setVisible(true);
+        }
+        if (this.logoutButton != null) {
+            this.logoutButton.setVisible(true);
+        }
+
+        // Add drawer content only for authenticated users (and only once)
+        if (currentUser != null && !this.drawerInitialized) {
+            this.addDrawerContent();
+            this.drawerInitialized = true;
+        }
 
         // Redirect to login if not authenticated
         if (currentUser == null) {
@@ -82,6 +100,8 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         final var nav = new SideNav();
         nav.addItem(new SideNavItem("Dashboard", "/dashboard"));
         nav.addItem(new SideNavItem("Projects", "/projects"));
+        nav.addItem(new SideNavItem("Tickets", "/tickets"));
+        nav.addItem(new SideNavItem("Board", "/board"));
         nav.addItem(new SideNavItem("Profile", "/profile"));
 
         final var currentUser = (UserDto) VaadinSession.getCurrent().getAttribute("user");
@@ -97,10 +117,10 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
     }
 
     private void addHeaderContent() {
-        final var toggle = new DrawerToggle();
-        toggle.setAriaLabel("Menu");
+        this.drawerToggle = new com.vaadin.flow.component.applayout.DrawerToggle();
+        this.drawerToggle.setAriaLabel("Menu");
 
-        final var header = new HorizontalLayout(toggle);
+        final var header = new HorizontalLayout(this.drawerToggle);
         header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         header.setWidthFull();
         header.addClassNames("toolbar");
@@ -109,12 +129,12 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         themeButton.addThemeVariants(ButtonVariant.LUMO_ICON);
         themeButton.setAriaLabel("Toggle theme");
 
-        final var logout = new Button("Logout", event -> {
+        this.logoutButton = new Button("Logout", event -> {
             VaadinSession.getCurrent().setAttribute("user", null);
             this.getUI().ifPresent(ui -> ui.navigate("login"));
         });
 
-        header.add(themeButton, logout);
+        header.add(themeButton, this.logoutButton);
         header.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 
         this.addToNavbar(false, header);
