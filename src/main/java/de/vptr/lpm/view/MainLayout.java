@@ -15,7 +15,6 @@ import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.VaadinSession;
 
 import de.vptr.lpm.component.button.ThemeToggleButton;
@@ -27,7 +26,7 @@ import jakarta.inject.Inject;
 /**
  * Main application layout with navigation sidebar and header.
  */
-public class MainLayout extends AppLayout implements RouterLayout, BeforeEnterObserver {
+public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
     private static final Logger LOG = LoggerFactory.getLogger(MainLayout.class);
 
